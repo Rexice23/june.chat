@@ -28,7 +28,7 @@ public class ClientHandler {
         this.username = "user" + usersCount;
         new Thread(() -> {
             try {
-                System.out.println("Подключился новый клиент");
+                System.out.println("Подключился новый пользователь");
                 while (true) {
                     String message = in.readUTF();
                     if (message.startsWith("/")) {
