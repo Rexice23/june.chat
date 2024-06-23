@@ -2,17 +2,16 @@ package ru.otus.june.chat.server;
 
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Server {
     private int port;
-    private List<ClientHandler> clients;
-
+    private Map<String, ClientHandler> clients;
 
     public Server(int port) {
         this.port = port;
-        this.clients = new ArrayList<>();
+        this.clients = new HashMap<>();
     }
 
     public void start() {
@@ -29,25 +28,26 @@ public class Server {
 
     public synchronized void subscribe(ClientHandler clientHandler) {
         broadcastMessage("В чат зашел: " + clientHandler.getUsername());
-        clients.add(clientHandler);
+        clients.put(clientHandler.getUsername(), clientHandler);
     }
 
     public synchronized void unsubscribe(ClientHandler clientHandler) {
-        clients.remove(clientHandler);
+        clients.remove(clientHandler.getUsername());
         broadcastMessage("Из чата вышел: " + clientHandler.getUsername());
     }
 
     public synchronized void broadcastMessage(String message) {
-        for (ClientHandler c : clients) {
+        for (ClientHandler c : clients.values()) {
             c.sendMessage(message);
         }
     }
 
     public synchronized void sendPrivateMessage(String targetUsername, String content) {
-        for (ClientHandler c : clients) {
-            if (c.getUsername().equals(targetUsername)) {
-                c.sendMessage(content);
-            }
+        ClientHandler clientHandler = clients.get(targetUsername);
+        if (clientHandler != null) {
+            clientHandler.sendMessage(content);
+        } else {
+            System.out.println("Пользователь " + targetUsername + " не найден.");
         }
     }
 }
