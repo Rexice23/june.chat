@@ -10,7 +10,7 @@
     </parent>
 
     <groupId>ru.otus.june.chat</groupId>
-    <artifactId>cient</artifactId>
+    <artifactId>client</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
