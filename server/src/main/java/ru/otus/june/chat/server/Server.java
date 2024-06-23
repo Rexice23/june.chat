@@ -9,6 +9,7 @@ public class Server {
     private int port;
     private List<ClientHandler> clients;
 
+
     public Server(int port) {
         this.port = port;
         this.clients = new ArrayList<>();
@@ -39,6 +40,14 @@ public class Server {
     public synchronized void broadcastMessage(String message) {
         for (ClientHandler c : clients) {
             c.sendMessage(message);
+        }
+    }
+
+    public synchronized void sendPrivateMessage(String targetUsername, String content) {
+        for (ClientHandler c : clients) {
+            if (c.getUsername().equals(targetUsername)) {
+                c.sendMessage(content);
+            }
         }
     }
 }
