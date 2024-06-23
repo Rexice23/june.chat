@@ -10,7 +10,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>server</module>
-        <module>cient</module>
+        <module>client</module>
     </modules>
 
     <properties>
