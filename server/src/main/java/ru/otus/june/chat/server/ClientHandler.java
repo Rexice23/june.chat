@@ -10,7 +10,6 @@ public class ClientHandler {
     private Socket socket;
     private DataInputStream in;
     private DataOutputStream out;
-
     private String username;
 
     private static int usersCount = 0;
@@ -35,6 +34,8 @@ public class ClientHandler {
                         if (message.equals("/exit")) {
                             sendMessage("/exitok");
                             break;
+                        } else if (message.startsWith("/w")) {
+                            handlePrivateMessage(message);
                         }
                         continue;
                     }
@@ -46,6 +47,16 @@ public class ClientHandler {
                 disconnect();
             }
         }).start();
+    }
+
+    private void handlePrivateMessage(String message) {
+        if (message.split(" ").length >= 3) {
+            String targetUsername = message.split(" ")[1];
+            String content = message.substring(targetUsername.length() + 1);
+            server.sendPrivateMessage(targetUsername, content);
+        } else {
+            server.broadcastMessage("Ошибка при обработке приватного сообщения");
+        }
     }
 
     public void sendMessage(String message) {
