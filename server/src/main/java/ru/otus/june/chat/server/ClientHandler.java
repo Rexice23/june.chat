@@ -82,10 +82,11 @@ public class ClientHandler {
     private void handlePrivateMessage(String message) {
         if (message.split(" ").length >= 3) {
             String targetUsername = message.split(" ")[1];
-            String content = message.substring(targetUsername.length() + 1);
+            String content = message.substring(targetUsername.length() + 4);
+            content = "Личное сообщение от "+ username + ": "+ content;
             server.sendPrivateMessage(targetUsername, content);
         } else {
-            server.broadcastMessage("Ошибка при обработке приватного сообщения");
+            server.broadcastMessage("Ошибка сообщения");
         }
     }
 

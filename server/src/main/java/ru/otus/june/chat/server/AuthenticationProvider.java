@@ -7,4 +7,3 @@ public interface AuthenticationProvider {
 
     boolean registration(ClientHandler clientHandler, String login, String password, String username);
 }
-
