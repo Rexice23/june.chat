@@ -3,28 +3,31 @@ package ru.otus.june.chat.server;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InMemoryAuthenticationProvider implements AuthenticationProvider {
+public class InMemoryAuthentificationProvider implements AuthentificationProvider {
     private class User {
         private String login;
         private String password;
         private String username;
+        private String role;
 
-        public User(String login, String password, String username) {
+        public User(String login, String password, String username, String role) {
             this.login = login;
             this.password = password;
             this.username = username;
+            this.role = role;
         }
     }
 
     private Server server;
     private List<User> users;
 
-    public InMemoryAuthenticationProvider(Server server) {
+    public InMemoryAuthentificationProvider(Server server) {
         this.server = server;
         this.users = new ArrayList<>();
-        this.users.add(new User("login1", "pass1", "user1"));
-        this.users.add(new User("login2", "pass2", "user2"));
-        this.users.add(new User("login3", "pass3", "user3"));
+        this.users.add(new User("login1", "pass1", "user1", "USER"));
+        this.users.add(new User("login2", "pass2", "user2", "USER"));
+        this.users.add(new User("login3", "pass3", "user3", "USER"));
+        this.users.add(new User("admin", "admin", "admin", "ADMIN"));
     }
 
     @Override
@@ -32,7 +35,7 @@ public class InMemoryAuthenticationProvider implements AuthenticationProvider {
         System.out.println("Сервис аутентификации запущен: In-Memory режим");
     }
 
-    private String getUsernameByLoginAndPassword(String login, String password) {
+    private String getUsernameByLoginAndPassowrd(String login, String password) {
         for (User u : users) {
             if (u.login.equals(login) && u.password.equals(password)) {
                 return u.username;
@@ -59,14 +62,24 @@ public class InMemoryAuthenticationProvider implements AuthenticationProvider {
         return false;
     }
 
+
+    private boolean isAdmin(String username) {
+        for (User u : users) {
+            if (u.username.equals(username) && u.role.equals("ADMIN")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public synchronized boolean authenticate(ClientHandler clientHandler, String login, String password) {
-        String authUsername = getUsernameByLoginAndPassword(login, password);
+        String authUsername = getUsernameByLoginAndPassowrd(login, password);
         if (authUsername == null) {
-            clientHandler.sendMessage("Некорретный логин/пароль");
+            clientHandler.sendMessage("Некорректный логин/пароль ");
             return false;
         }
-        if (server.isUsernameBusy(authUsername)) {
+        if (server.isUserNameBusy(authUsername)) {
             clientHandler.sendMessage("Указанная учетная запись уже занята");
             return false;
         }
@@ -78,8 +91,8 @@ public class InMemoryAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public boolean registration(ClientHandler clientHandler, String login, String password, String username) {
-        if (login.trim().length() < 3 || password.trim().length() < 6 || username.trim().length() < 1) {
-            clientHandler.sendMessage("Логин 3+ символа, Пароль 6+ символов, Имя пользователя 1+ символ");
+        if (login.trim().length() < 3 || password.trim().length() < 6 || username.trim().length() < 2) {
+            clientHandler.sendMessage("Логин 3+ символа, пароль 6+ символов, Имя пользователя 2 +");
             return false;
         }
         if (isLoginAlreadyExist(login)) {
@@ -90,10 +103,36 @@ public class InMemoryAuthenticationProvider implements AuthenticationProvider {
             clientHandler.sendMessage("Указанное имя пользователя уже занято");
             return false;
         }
-        users.add(new User(login, password, username));
+        users.add(new User(login, password, username, "USER"));
         clientHandler.setUsername(username);
         server.subscribe(clientHandler);
         clientHandler.sendMessage("/regok " + username);
         return true;
     }
+
+    @Override
+    public boolean checkKickUser(ClientHandler clientHandler, String username) {
+        if (!isUsernameAlreadyExist(username)) {
+            clientHandler.sendMessage("Указанное имя пользователя не существует!");
+            return false;
+        }
+        if (!isAdmin(clientHandler.getUsername())) {
+            clientHandler.sendMessage("Недостаточно прав для отключения пользователя.");
+            return false;
+        }
+        if (!server.isUserNameBusy(username)) {
+            clientHandler.sendMessage("Пользователь с таким именем не подключен!");
+            return false;
+        }
+        System.out.println(clientHandler.getUsername());
+        System.out.println(username);
+        if (clientHandler.getUsername().equals(username)){
+            clientHandler.sendMessage("Нельзя удалить самого себя!");
+            return false;
+        }
+        return true;
+    }
+
+
+
 }

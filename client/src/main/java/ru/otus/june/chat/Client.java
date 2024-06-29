@@ -16,12 +16,21 @@ public class Client {
         socket = new Socket("localhost", 8189);
         in = new DataInputStream(socket.getInputStream());
         out = new DataOutputStream(socket.getOutputStream());
+
         new Thread(() -> {
             try {
                 while (true) {
                     String message = in.readUTF();
                     if (message.equals("/exitok")) {
                         break;
+                    }
+                    if (message.startsWith("/authok ")) {
+                        System.out.println("Удалось упешно войти в чат под именем пользователя: " + message.split(" ")[1]);
+                        continue;
+                    }
+                    if (message.startsWith("/regok ")) {
+                        System.out.println("Удалось упешно пройти регистрацию войти в чат под именем пользователя: " + message.split(" ")[1]);
+                        continue;
                     }
                     System.out.println(message);
                 }
@@ -62,5 +71,6 @@ public class Client {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println("Пользователь вышел");
     }
 }
