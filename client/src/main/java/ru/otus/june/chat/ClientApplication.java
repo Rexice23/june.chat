@@ -1,5 +1,6 @@
 package ru.otus.june.chat;
 
+
 import java.io.IOException;
 
 public class ClientApplication {
