@@ -8,23 +8,23 @@ import java.util.List;
 public class Server {
     private int port;
     private List<ClientHandler> clients;
-    private AuthentificationProvider authentificationProvider;
+    private AuthenticationProvider authenticationProvider;
 
 
-    public AuthentificationProvider getAuthentificationProvider() {
-        return authentificationProvider;
+    public AuthenticationProvider getAuthenticationProvider() {
+        return authenticationProvider;
     }
 
     public Server(int port) {
         this.port = port;
         this.clients = new ArrayList<>();
-        this.authentificationProvider = new InMemoryAuthentificationProvider(this);
+        this.authenticationProvider = new InMemoryAuthenticationProvider(this);
     }
 
     public void start() {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Сервер запущен на порту: " + port);
-            authentificationProvider.initialize();
+            authenticationProvider.initialize();
             while (true) {
                 Socket socket = serverSocket.accept();
                 new ClientHandler(this, socket);
@@ -56,7 +56,6 @@ public class Server {
         for (ClientHandler c : clients) {
             if (c.getUsername().equals(userToKick)) {
                 c.sendMessage("Вы были отключены от чата администратором.");
-//                c.disconnect();
                 clients.remove(c);
                 broadcastMessage("Пользователь " + userToKick + " был отключен от чата администратором.");
                 break;

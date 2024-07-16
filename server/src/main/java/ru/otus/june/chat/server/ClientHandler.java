@@ -41,7 +41,7 @@ public class ClientHandler {
                             sendMessage("Неверный формат команды /auth");
                             continue;
                         }
-                        if (server.getAuthentificationProvider().authenticate(this, elements[1], elements[2])){
+                        if (server.getAuthenticationProvider().authenticate(this, elements[1], elements[2])){
                             break;
                         }
                         continue;
@@ -53,7 +53,7 @@ public class ClientHandler {
                             sendMessage("Неверный формат команды /register");
                             continue;
                         }
-                        if (server.getAuthentificationProvider().registration(this, elements[1], elements[2], elements[3])){
+                        if (server.getAuthenticationProvider().registration(this, elements[1], elements[2], elements[3])){
                             break;
                         }
                         continue;
@@ -77,7 +77,7 @@ public class ClientHandler {
                                 sendMessage("Неверный формат команды. Используйте '/kick username'");
                                 continue;
                             }
-                            if (server.getAuthentificationProvider().checkKickUser(this, elements[1])){
+                            if (server.getAuthenticationProvider().checkKickUser(this, elements[1])){
                                 String userToKick = elements[1];
                                 server.kickUser(userToKick);
                             }

@@ -1,6 +1,6 @@
 package ru.otus.june.chat.server;
 
-public interface AuthentificationProvider {
+public interface AuthenticationProvider {
     void initialize();
 
     boolean authenticate(ClientHandler clientHandler, String login, String password);
