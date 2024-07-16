@@ -1,4 +1,3 @@
-
 package ru.otus.june.chat.server;
 
 import java.io.DataInputStream;
@@ -28,6 +27,7 @@ public class ClientHandler {
         this.out = new DataOutputStream(socket.getOutputStream());
         new Thread(() -> {
             try {
+
                 System.out.println("Подключился новый клиент");
                 while (true) {
                     String message = in.readUTF();
@@ -41,31 +41,34 @@ public class ClientHandler {
                             sendMessage("Неверный формат команды /auth");
                             continue;
                         }
-                        if (server.getAuthenticationProvider().authenticate(this, elements[1], elements[2])) {
+                        if (server.getAuthenticationProvider().authenticate(this, elements[1], elements[2])){
                             break;
                         }
                         continue;
                     }
+
                     if (message.startsWith("/register ")) {
                         String[] elements = message.split(" ");
                         if (elements.length != 4) {
                             sendMessage("Неверный формат команды /register");
                             continue;
                         }
-                        if (server.getAuthenticationProvider().registration(this, elements[1], elements[2], elements[3])) {
+                        if (server.getAuthenticationProvider().registration(this, elements[1], elements[2], elements[3])){
                             break;
                         }
                         continue;
                     }
-                    sendMessage("Перед работой с чатом необходимо выполнить аутентификацию '/auth login password' или регистрацию '/register login password username'");
+                    sendMessage("Перед работой с чатом необходимо выполнить аутентификацию '/auth login password' или регистрацию '/register login password username '");
                 }
                 while (true) {
                     String message = in.readUTF();
+
                     if (message.startsWith("/")) {
                         if (message.equals("/exit")) {
                             sendMessage("/exitok");
                             break;
-                        } else if (message.startsWith("/w ")) {
+                        }
+                        else if (message.startsWith("/w ")) {
                             handlePrivateMessage(message);
                         }
                         if (message.startsWith("/kick")) {
@@ -74,7 +77,7 @@ public class ClientHandler {
                                 sendMessage("Неверный формат команды. Используйте '/kick username'");
                                 continue;
                             }
-                            if (server.getAuthenticationProvider().checkKickUser(this, elements[1])) {
+                            if (server.getAuthenticationProvider().checkKickUser(this, elements[1])){
                                 String userToKick = elements[1];
                                 server.kickUser(userToKick);
                             }
@@ -92,6 +95,14 @@ public class ClientHandler {
         }).start();
     }
 
+    public void sendMessage(String message) {
+        try {
+            out.writeUTF(message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void handlePrivateMessage(String message) {
         if (message.split(" ").length >= 3) {
             String targetUsername = message.split(" ")[1];
@@ -100,14 +111,6 @@ public class ClientHandler {
             server.sendPrivateMessage(targetUsername, content);
         } else {
             server.broadcastMessage("Ошибка сообщения");
-        }
-    }
-
-    public void sendMessage(String message) {
-        try {
-            out.writeUTF(message);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
