@@ -68,6 +68,18 @@ public class ClientHandler {
                         } else if (message.startsWith("/w ")) {
                             handlePrivateMessage(message);
                         }
+                        if (message.startsWith("/kick")) {
+                            String[] elements = message.split(" ");
+                            if (elements.length != 2) {
+                                sendMessage("Неверный формат команды. Используйте '/kick username'");
+                                continue;
+                            }
+                            if (server.getAuthenticationProvider().checkKickUser(this, elements[1])) {
+                                String userToKick = elements[1];
+                                server.kickUser(userToKick);
+                            }
+                            continue;
+                        }
                         continue;
                     }
                     server.broadcastMessage(username + ": " + message);
@@ -84,7 +96,7 @@ public class ClientHandler {
         if (message.split(" ").length >= 3) {
             String targetUsername = message.split(" ")[1];
             String content = message.substring(targetUsername.length() + 4);
-            content = "Личное сообщение от "+ username + ": "+ content;
+            content = "Личное сообщение от " + username + ": " + content;
             server.sendPrivateMessage(targetUsername, content);
         } else {
             server.broadcastMessage("Ошибка сообщения");

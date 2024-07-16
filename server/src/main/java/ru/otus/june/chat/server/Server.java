@@ -2,13 +2,14 @@ package ru.otus.june.chat.server;
 
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Server {
     private int port;
-    private Map<String, ClientHandler> clients;
+    private List<ClientHandler> clients;
     private AuthenticationProvider authenticationProvider;
+
 
     public AuthenticationProvider getAuthenticationProvider() {
         return authenticationProvider;
@@ -16,7 +17,7 @@ public class Server {
 
     public Server(int port) {
         this.port = port;
-        this.clients = new HashMap<>();
+        this.clients = new ArrayList<>();
         this.authenticationProvider = new InMemoryAuthenticationProvider(this);
     }
 
@@ -28,6 +29,7 @@ public class Server {
                 Socket socket = serverSocket.accept();
                 new ClientHandler(this, socket);
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -35,31 +37,43 @@ public class Server {
 
     public synchronized void subscribe(ClientHandler clientHandler) {
         broadcastMessage("В чат зашел: " + clientHandler.getUsername());
-        clients.put(clientHandler.getUsername(), clientHandler);
+        clients.add(clientHandler);
     }
 
     public synchronized void unsubscribe(ClientHandler clientHandler) {
-        clients.remove(clientHandler.getUsername());
+        clients.remove(clientHandler);
         broadcastMessage("Из чата вышел: " + clientHandler.getUsername());
     }
 
     public synchronized void broadcastMessage(String message) {
-        for (ClientHandler c : clients.values()) {
+        for (ClientHandler c : clients) {
             c.sendMessage(message);
+
         }
+    }
+
+    public void kickUser(String userToKick) {
+        for (ClientHandler c : clients) {
+            if (c.getUsername().equals(userToKick)) {
+                c.sendMessage("Вы были отключены от чата администратором.");
+                clients.remove(c);
+                broadcastMessage("Пользователь " + userToKick + " был отключен от чата администратором.");
+                break;
+            }
+        }
+
     }
 
     public synchronized void sendPrivateMessage(String targetUsername, String content) {
-        ClientHandler clientHandler = clients.get(targetUsername);
-        if (clientHandler != null) {
-            clientHandler.sendMessage(content);
-        } else {
-            System.out.println("Пользователь " + targetUsername + " не найден.");
+        for (ClientHandler c : clients) {
+            if (c.getUsername().equals(targetUsername)) {
+                c.sendMessage(content);
+            }
         }
     }
 
-    public boolean isUsernameBusy(String username) {
-        for (ClientHandler c : clients.values()) {
+    public boolean isUserNameBusy(String username) {
+        for (ClientHandler c : clients) {
             if (c.getUsername().equals(username)) {
                 return true;
             }
